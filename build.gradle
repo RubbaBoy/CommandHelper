@@ -1,0 +1,59 @@
+plugins {
+    id "java"
+    id "com.jfrog.artifactory" version "4.7.5"
+    id "maven-publish"
+}
+
+group = 'com.uddernetworks.command'
+version = '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+
+    maven { url "http://repo.rubbaboy.me/Spigot/" }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.12.1-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot:1.12.1-R0.1-SNAPSHOT'
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = 'Minecraft'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+        }
+
+        defaults {
+            publications ('mavenJava')
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
