@@ -2,6 +2,36 @@
 
 CommandHelper is a lightweight command API/Framework for Spigot using Annotations.
 
+## Obtaining
+You can use CommandHelper with Gradle or Maven. An example of the Gradle declaration:
+```groovy
+repositories {
+    maven { url "http://repo.rubbaboy.me/Minecraft/" }
+}
+
+dependencies {
+    compile(group: 'com.uddernetworks.command', name: 'CommandHelper', version: '1.0-SNAPSHOT')
+}
+```
+
+An example of Maven usage:
+```xml
+<repositories>	
+        <repository>	
+            <id>rubbaboy-plugins</id>	
+            <url>http://repo.rubbaboy.me/Minecraft/</url>	
+        </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.uddernetworks.command</groupId>
+        <artifactId>CommandHelper</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>
+</dependencies>
+```
+
 ## Usage
 
 To create any command, you need to register it in your main class. You register all commands through a single instance of `CommandManager` in the onEnable of a Plugin. This is an example of registering a class named `ExampleCommand` in the CommandManager.
