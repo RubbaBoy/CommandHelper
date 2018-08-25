@@ -93,7 +93,6 @@ public class CommandManager implements CommandExecutor {
     }
 
     private boolean invokeArgMethod(CommandSender sender, Argument argument, Method method, String[] args, Object instance, Command command) {
-
         List<String> realArgs = getRealArguments(argument.format(), String.join(" ", args).trim());
 
         if (realArgs == null) return false;
@@ -164,6 +163,7 @@ public class CommandManager implements CommandExecutor {
         List<String> templateArgs = Arrays.asList(template.split(" "));
         List<String> realArgs = getQuotes(input);
         List<String> ret = new ArrayList<>();
+        if ("".equals(template) && (input == null || "".equals(input))) return ret;
 
         if (templateArgs.size() > realArgs.size()) return null;
 

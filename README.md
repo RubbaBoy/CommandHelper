@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    compile(group: 'com.uddernetworks.command', name: 'CommandHelper', version: '1.0-SNAPSHOT')
+    compile(group: 'com.uddernetworks.command', name: 'CommandHelper', version: '1.1-SNAPSHOT')
 }
 ```
 
@@ -27,7 +27,7 @@ An example of Maven usage:
     <dependency>
         <groupId>com.uddernetworks.command</groupId>
         <artifactId>CommandHelper</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
