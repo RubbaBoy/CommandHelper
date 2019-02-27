@@ -2,6 +2,7 @@ package com.uddernetworks.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -47,6 +48,10 @@ public class CommandArg {
 
     public Player getPlayer() {
         return Bukkit.getPlayer(input);
+    }
+
+    public OfflinePlayer getOfflinePlayer() {
+        return Bukkit.getOfflinePlayer(input);
     }
 
 }

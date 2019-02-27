@@ -110,6 +110,7 @@ Here are all the methods for getting an argument type and what they return:
  - `#getMaterial()` (Material)
  - `#getSound()` (Sound)
  - `#getPlayer()` (Player)
+ - `#getOfflinePlayer()` (OfflinePlayer)
 
 Any method with the `@ArgumentError` annotation on it will be dedicated to any errors that happen with the command couldn't be executed by the sender for reasons like permissions, errors, invalid argument count, etc. This requires a `CommandSender` argument and a `String` argument, for the command's sender and the error's message respectively. Here is an example of this using used:
 ```Java
