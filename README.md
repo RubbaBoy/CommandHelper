@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    compile(group: 'com.uddernetworks.command', name: 'CommandHelper', version: '1.1-SNAPSHOT')
+    compile(group: 'com.uddernetworks.command', name: 'CommandHelper', version: '1.2-SNAPSHOT')
 }
 ```
 
@@ -27,7 +27,7 @@ An example of Maven usage:
     <dependency>
         <groupId>com.uddernetworks.command</groupId>
         <artifactId>CommandHelper</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
@@ -80,6 +80,14 @@ public void kickArg(CommandSender sender, ArgumentList args) {
 ```
  ```Java
 @Argument(format = "argument * something")
+public void someArgument(CommandSender sender, ArgumentList args) {
+   boolean arg = args.nextArg().getBoolean();
+}
+```
+
+You can also require only a few certain arguments to be used. For only the arguments "one", "two", and "three" being allowed, you can simply do:
+ ```Java
+@Argument(format = "argument [one,two,three]")
 public void someArgument(CommandSender sender, ArgumentList args) {
    boolean arg = args.nextArg().getBoolean();
 }

@@ -50,6 +50,43 @@ public class CommandManager implements CommandExecutor {
             PluginCommand pluginCommand = (PluginCommand) constructor.newInstance(command, plugin);
             pluginCommand.setExecutor(this);
             pluginCommand.setAliases(Arrays.asList(aliases));
+            pluginCommand.setTabCompleter((sender, cmd, alias, args) -> {
+                List<String> result = new ArrayList<>();
+                Command annotation = getCommandAnnotation(cmd.getName());
+
+                List<ArgumentMethodEntry> list = arguments.get(annotation);
+                list.forEach(entry -> {
+                    Argument argument = entry.getKey();
+                    String format = argument.format().toLowerCase();
+
+                    String[] formatSplit = format.split(" ");
+
+                    if (args.length == 0 || args[0].isEmpty()) {
+                        result.add(formatSplit[0]);
+                        return;
+                    }
+
+                    for (int i = 0; i < args.length; i++) {
+                        String currArg = args[i].toLowerCase();
+                        if (i < formatSplit.length) {
+                            String currFormat = formatSplit[i];
+                            if (currFormat.equals("*~")) break;
+                            if (currFormat.equals("*")) continue;
+
+                            if (currFormat.startsWith("[") && currFormat.endsWith("]")) {
+                                String debracketed = currFormat.substring(1, currFormat.length() - 1);
+                                List<String> parts = Arrays.asList(debracketed.split(","));
+
+                                if (i == args.length - 1 && currArg.isEmpty()) result.addAll(parts);
+                            } else {
+                                if (i == args.length - 1 && currFormat.startsWith(currArg)) result.add(currFormat);
+                            }
+                        }
+                    }
+                });
+
+                return result;
+            });
 
             commandMap.register(command, pluginCommand);
         } catch (ReflectiveOperationException e) {
@@ -94,11 +131,12 @@ public class CommandManager implements CommandExecutor {
 
     private boolean invokeArgMethod(CommandSender sender, Argument argument, Method method, String[] args, Object instance, Command command) {
         List<String> realArgs = getRealArguments(argument.format(), String.join(" ", args).trim());
+        System.out.println("realArgs = " + realArgs);
 
         if (realArgs == null) return false;
         ArgumentList argumentList = new ArgumentList();
 
-        realArgs.stream().forEachOrdered(realArg -> argumentList.add(new CommandArg(realArg)));
+        realArgs.forEach(realArg -> argumentList.add(new CommandArg(realArg)));
 
         if (!sender.hasPermission(argument.permission())) {
             sendError(command, instance, sender, "You don't have permission to preform this action");
@@ -160,7 +198,7 @@ public class CommandManager implements CommandExecutor {
 
 
     private List<String> getRealArguments(String template, String input) {
-        List<String> templateArgs = Arrays.asList(template.split(" "));
+        List<String> templateArgs = Arrays.asList(template.toLowerCase().split(" "));
         List<String> realArgs = getQuotes(input);
         List<String> ret = new ArrayList<>();
         if ("".equals(template) && (input == null || "".equals(input))) return ret;
@@ -168,15 +206,25 @@ public class CommandManager implements CommandExecutor {
         if (templateArgs.size() > realArgs.size()) return null;
 
         for (int i = 0; i < templateArgs.size(); i++) {
-            if (!templateArgs.get(i).equalsIgnoreCase("*") && !templateArgs.get(i).equalsIgnoreCase(realArgs.get(i))) {
+            String currentTemplate = templateArgs.get(i);
+            String currentReal = realArgs.get(i).toLowerCase();
+            if (!currentTemplate.equalsIgnoreCase("*") && !currentTemplate.equalsIgnoreCase(currentReal)) {
+                if (currentTemplate.startsWith("[") && currentTemplate.endsWith("]")) {
+                    String debracketed = currentTemplate.substring(1, currentTemplate.length() - 1);
+                    List<String> parts = Arrays.asList(debracketed.split(","));
+
+                    if (!parts.contains(currentReal)) return null;
+                    continue;
+                }
+
                 return null;
-            } else if (templateArgs.get(i).equalsIgnoreCase("*")) {
-                ret.add(realArgs.get(i));
-            } else if (templateArgs.get(i).equalsIgnoreCase("*~")) {
-                ret.add(realArgs.get(i));
+            } else if (currentTemplate.equalsIgnoreCase("*")) {
+                ret.add(currentReal);
+            } else if (currentTemplate.equalsIgnoreCase("*~")) {
+                ret.add(currentReal);
 
                 for (int i2 = 0; i2 < templateArgs.size() - i - 1; i2++) {
-                    ret.add(i, ret.get(i) + " " + realArgs.get(i));
+                    ret.add(i, ret.get(i) + " " + currentReal);
                 }
                 return ret;
             }
@@ -199,7 +247,6 @@ public class CommandManager implements CommandExecutor {
         }
         return matched;
     }
-
 
     private class ArgumentMethodEntry implements Map.Entry<Argument, Method> {
         private Argument arg;
