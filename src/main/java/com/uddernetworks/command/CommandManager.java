@@ -131,7 +131,6 @@ public class CommandManager implements CommandExecutor {
 
     private boolean invokeArgMethod(CommandSender sender, Argument argument, Method method, String[] args, Object instance, Command command) {
         List<String> realArgs = getRealArguments(argument.format(), String.join(" ", args).trim());
-        System.out.println("realArgs = " + realArgs);
 
         if (realArgs == null) return false;
         ArgumentList argumentList = new ArgumentList();
@@ -214,6 +213,7 @@ public class CommandManager implements CommandExecutor {
                     List<String> parts = Arrays.asList(debracketed.split(","));
 
                     if (!parts.contains(currentReal)) return null;
+                    ret.add(currentReal);
                     continue;
                 }
 
