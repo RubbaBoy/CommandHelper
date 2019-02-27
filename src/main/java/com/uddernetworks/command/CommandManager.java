@@ -3,6 +3,7 @@ package com.uddernetworks.command;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
@@ -11,6 +12,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.uddernetworks.command.CommandResult.*;
 
 public class CommandManager implements CommandExecutor {
 
@@ -73,13 +77,28 @@ public class CommandManager implements CommandExecutor {
                             if (currFormat.equals("*~")) break;
                             if (currFormat.equals("*")) continue;
 
+                            if (currFormat.equals("@p")) {
+                                if (i == args.length - 1) result.addAll(completePlayer(currArg));
+                                continue;
+                            }
+
                             if (currFormat.startsWith("[") && currFormat.endsWith("]")) {
                                 String debracketed = currFormat.substring(1, currFormat.length() - 1);
                                 List<String> parts = Arrays.asList(debracketed.split(","));
 
-                                if (i == args.length - 1 && currArg.isEmpty()) result.addAll(parts);
+                                if (i == args.length - 1) {
+                                    result.addAll(parts.stream()
+                                            .filter(part -> part.startsWith(currArg))
+                                            .collect(Collectors.toList()));
+                                }
                             } else {
-                                if (i == args.length - 1 && currFormat.startsWith(currArg)) result.add(currFormat);
+                                if (i == args.length - 1) {
+                                    if (currFormat.startsWith(currArg)) {
+                                        result.add(currFormat);
+                                    }
+                                } else if (!formatEquals(currFormat, currArg)) {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -92,6 +111,25 @@ public class CommandManager implements CommandExecutor {
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean formatEquals(String format, String argument) {
+        if (format.startsWith("[") && format.endsWith("]")) {
+            String debracketed = format.substring(1, format.length() - 1);
+            List<String> parts = Arrays.asList(debracketed.split(","));
+
+            return parts.contains(argument);
+        } else {
+            return format.equalsIgnoreCase(argument);
+        }
+    }
+
+    private List<String> completePlayer(String input) {
+        return Bukkit.getOnlinePlayers()
+                .stream()
+                .filter(player -> player.getName().toLowerCase().startsWith(input))
+                .map(Player::getName)
+                .collect(Collectors.toList());
     }
 
     private boolean commandRegistered(String command) {
@@ -129,17 +167,18 @@ public class CommandManager implements CommandExecutor {
         return null;
     }
 
-    private boolean invokeArgMethod(CommandSender sender, Argument argument, Method method, String[] args, Object instance, Command command) {
+    private CommandResult invokeArgMethod(CommandSender sender, Argument argument, Method method, String[] args, Object instance, Command command) {
         List<String> realArgs = getRealArguments(argument.format(), String.join(" ", args).trim());
 
-        if (realArgs == null) return false;
+        if (realArgs == null) return INVALID_SYNTAX;
+
         ArgumentList argumentList = new ArgumentList();
 
         realArgs.forEach(realArg -> argumentList.add(new CommandArg(realArg)));
 
         if (!sender.hasPermission(argument.permission())) {
             sendError(command, instance, sender, "You don't have permission to preform this action");
-            return false;
+            return INVALID_PERMISSION;
         }
 
         try {
@@ -148,7 +187,7 @@ public class CommandManager implements CommandExecutor {
             e.printStackTrace();
         }
 
-        return true;
+        return INVALID_SYNTAX;
     }
 
     private void sendError(Command annotation, Object executor, CommandSender sender, String message) {
@@ -185,12 +224,10 @@ public class CommandManager implements CommandExecutor {
         }
 
         for (ArgumentMethodEntry entry : arguments.get(annotation)) {
-            if (invokeArgMethod(sender, entry.getKey(), entry.getValue(), args, executor, annotation)) {
+            if (invokeArgMethod(sender, entry.getKey(), entry.getValue(), args, executor, annotation) == SUCCESS) {
                 return true;
             }
         }
-
-        sendError(annotation, executor, sender, "Invalid command syntax");
 
         return true;
     }
@@ -206,19 +243,19 @@ public class CommandManager implements CommandExecutor {
 
         for (int i = 0; i < templateArgs.size(); i++) {
             String currentTemplate = templateArgs.get(i);
-            String currentReal = realArgs.get(i).toLowerCase();
-            if (!currentTemplate.equalsIgnoreCase("*") && !currentTemplate.equalsIgnoreCase(currentReal)) {
+            String currentReal = realArgs.get(i);
+            if (!currentTemplate.equalsIgnoreCase("*") && !currentTemplate.equalsIgnoreCase("@p") && !currentTemplate.equalsIgnoreCase(currentReal)) {
                 if (currentTemplate.startsWith("[") && currentTemplate.endsWith("]")) {
                     String debracketed = currentTemplate.substring(1, currentTemplate.length() - 1);
                     List<String> parts = Arrays.asList(debracketed.split(","));
 
-                    if (!parts.contains(currentReal)) return null;
-                    ret.add(currentReal);
+                    if (!parts.contains(currentReal.toLowerCase())) return null;
+                    ret.add(realArgs.get(i));
                     continue;
                 }
 
                 return null;
-            } else if (currentTemplate.equalsIgnoreCase("*")) {
+            } else if (currentTemplate.equalsIgnoreCase("*") || currentTemplate.equalsIgnoreCase("@p")) {
                 ret.add(currentReal);
             } else if (currentTemplate.equalsIgnoreCase("*~")) {
                 ret.add(currentReal);

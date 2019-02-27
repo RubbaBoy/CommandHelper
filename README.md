@@ -89,7 +89,14 @@ You can also require only a few certain arguments to be used. For only the argum
  ```Java
 @Argument(format = "argument [one,two,three]")
 public void someArgument(CommandSender sender, ArgumentList args) {
-   boolean arg = args.nextArg().getBoolean();
+   String arg = args.nextArg().getString();
+}
+```
+You can also require a player's name as an argument as well.
+ ```Java
+@Argument(format = "kick @p")
+public void someArgument(CommandSender sender, ArgumentList args) {
+   Player arg = args.nextArg().getPlayer();
 }
 ```
 
@@ -102,6 +109,7 @@ Here are all the methods for getting an argument type and what they return:
  - `#getByte()` (byte)
  - `#getMaterial()` (Material)
  - `#getSound()` (Sound)
+ - `#getPlayer()` (Player)
 
 Any method with the `@ArgumentError` annotation on it will be dedicated to any errors that happen with the command couldn't be executed by the sender for reasons like permissions, errors, invalid argument count, etc. This requires a `CommandSender` argument and a `String` argument, for the command's sender and the error's message respectively. Here is an example of this using used:
 ```Java

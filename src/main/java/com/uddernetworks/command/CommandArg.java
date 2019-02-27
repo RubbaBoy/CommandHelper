@@ -1,7 +1,9 @@
 package com.uddernetworks.command;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 
 public class CommandArg {
 
@@ -41,6 +43,10 @@ public class CommandArg {
 
     public Sound getSound() {
         return Sound.valueOf(input);
+    }
+
+    public Player getPlayer() {
+        return Bukkit.getPlayer(input);
     }
 
 }
