@@ -3,6 +3,8 @@
 CommandHelper is a lightweight command API/Framework for Spigot using Annotations.
 
 ## Obtaining
+**Note:** My repo is currently down due due to ***severe*** spamming of requests (Contact me for details if interested in more of why), I may put it back up later on, or find another way of distributing the project.
+
 You can use CommandHelper with Gradle or Maven. An example of the Gradle declaration:
 ```groovy
 repositories {
